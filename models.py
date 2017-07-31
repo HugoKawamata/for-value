@@ -56,5 +56,6 @@ def compose_message(deetsList):
         message += deet["price"] + "\n"
         if deet["price"] != "error":
             totalCost += Decimal(sub(r'[^\d.]', '', deet["price"]))
-    message += "Total Price: $" + str(totalCost)
+    if len(deetsList) > 1:
+        message += "Total Price: $" + str(totalCost)
     return message
