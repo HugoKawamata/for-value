@@ -42,12 +42,12 @@ def webhook():
 
                     if message_text.lower() == "help":
                         send_message(sender_id, "Send card names on separate lines to get their prices. Add a '^' to the start of a cardname to see the edition we grab as well.")
+                    else:
+                        decoded = decode_message(message_text)
+                        deets = get_prices(decoded)
+                        respond = compose_message(deets)
 
-                    decoded = decode_message(message_text)
-                    deets = get_prices(decoded)
-                    respond = compose_message(deets)
-
-                    send_message(sender_id, respond)
+                        send_message(sender_id, respond)
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
