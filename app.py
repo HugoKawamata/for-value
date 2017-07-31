@@ -40,9 +40,12 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
-                    #decoded = decode_message(message_text)
-                    #log(decoded)
-                    #deets = get_prices()
+                    decoded = decode_message(message_text)
+                    log(decoded)
+                    deets = get_prices()
+                    log(deets)
+                    respond = compose_message(deets)
+                    log(respond)
 
                     send_message(sender_id, "test")
 
