@@ -47,7 +47,7 @@ def webhook():
                     respond = compose_message(deets)
                     log(respond)
 
-                    send_message(sender_id, "test")
+                    send_message(sender_id, respond)
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
