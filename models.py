@@ -1,5 +1,7 @@
 from lxml import html
 import requests
+from re import sub
+from decimal import Decimal
 
 def decode_message(message):
     cardList = message.split("\n")
@@ -21,7 +23,8 @@ def get_prices(cardList):
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
-        name = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")[0]
+        singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
+        name = singleItemList[0] if len(singleItemList) > 0 else "error"
         cardDeets["name"] = name
 
         singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[1]//text()")
@@ -38,7 +41,11 @@ def get_prices(cardList):
 
 def compose_message(deetsList):
     message = ""
+    totalCost = 0
     for deet in deetsList:
         message += deet["name"] + ": "
         message += deet["price"] + "\n"
+        if deet["price"] != "error":
+            totalCost += Decimal(sub(r'[^\d.]', '', deet["price"]))
+    message += "Total Price: $" + str(totalCost)
     return message
