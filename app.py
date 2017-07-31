@@ -43,6 +43,7 @@ def webhook():
                     cardList = decode_message(message_text)
                     log(cardList)
 
+                    log(get_prices(cardList))
                     send_message(sender_id, get_prices(cardList))
 
                 if messaging_event.get("delivery"):  # delivery confirmation

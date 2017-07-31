@@ -18,5 +18,5 @@ def get_prices(cardList):
     for card in cardList:
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
-        name = tree.xpath('//div[@class="mainListing"][1]//span[@class="productDetailTitle"][1]/a/text()')
+        name = "".join(tree.xpath('//div[@class="mainListing"][1]//span[@class="productDetailTitle"][1]/a/text()'))
         return name
