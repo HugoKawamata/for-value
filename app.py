@@ -40,9 +40,11 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
-                    cardList = decode_message(message_text)
+                    #decoded = decode_message(message_text)
+                    #log(decoded)
+                    #deets = get_prices()
 
-                    send_message(sender_id, compose_message(get_prices(decode_message(message_text))))
+                    send_message(sender_id, "meme")
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
