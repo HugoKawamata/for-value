@@ -19,6 +19,11 @@ def decode_message(message):
 def get_prices(cardList):
     deetsList = []
     for card in cardList:
+        getEdition = False
+        if card[0] == "%":
+            getEdition = True
+            card = card[1:]
+
         cardDeets = {"name": "error", "edition": "error", "price": "error"}
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
@@ -27,9 +32,10 @@ def get_prices(cardList):
         name = singleItemList[0] if len(singleItemList) > 0 else "error"
         cardDeets["name"] = name
 
-        singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[1]//text()")
-        edition = singleItemList[0] if len(singleItemList) > 0 else "error"
-        cardDeets["edition"] = " ".join(edition.split()) # Remove whitespace
+        if getEdition:
+            singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[1]//text()")
+            edition = singleItemList[0] if len(singleItemList) > 0 else "error"
+            cardDeets["edition"] = " ".join(edition.split()) # Remove whitespace
 
         singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='stylePrice'])[1]//text()")
         price = singleItemList[0] if len(singleItemList) > 0 else "error"
@@ -43,7 +49,10 @@ def compose_message(deetsList):
     message = ""
     totalCost = 0
     for deet in deetsList:
-        message += deet["name"] + ": "
+        message += deet["name"]
+        if deet["error"] != "error":
+            message += " " + deet["edition"]
+        message += ": "
         message += deet["price"] + "\n"
         if deet["price"] != "error":
             totalCost += Decimal(sub(r'[^\d.]', '', deet["price"]))
