@@ -20,7 +20,7 @@ def get_prices(cardList):
     deetsList = []
     for card in cardList:
         getEdition = False
-        if card[0] == "%":
+        if card[0] == "^":
             getEdition = True
             card = card[1:]
 
