@@ -1,6 +1,5 @@
 from lxml import html
 import requests
-import urls
 
 def decode_message(message):
     cardList = message.split("\n")
