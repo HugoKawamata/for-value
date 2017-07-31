@@ -42,7 +42,7 @@ def webhook():
 
                     decoded = decode_message(message_text)
                     log(decoded)
-                    deets = get_prices()
+                    deets = get_prices(decoded)
                     log(deets)
                     respond = compose_message(deets)
                     log(respond)
