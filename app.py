@@ -44,7 +44,7 @@ def webhook():
                     #log(decoded)
                     #deets = get_prices()
 
-                    send_message(sender_id, "meme")
+                    send_message(sender_id, "test")
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
