@@ -18,7 +18,7 @@ def verify():
             return "Verification token mismatch", 403
         return request.args["hub.challenge"], 200
 
-    return "Hello world", 200
+    return app.send_static_file("privacy.html")
 
 
 @app.route('/', methods=['POST'])

@@ -51,7 +51,7 @@ def compose_message(deetsList):
     for deet in deetsList:
         message += deet["name"]
         if deet["edition"] != "error":
-            message += " " + deet["edition"]
+            message += " - " + deet["edition"]
         message += ": "
         message += deet["price"] + "\n"
         if deet["price"] != "error":
