@@ -42,7 +42,7 @@ def webhook():
 
                     decoded = decode_message(message_text)
 
-                    if determineMode(message_text) == "price-mode":
+                    if determine_mode(message_text) == "price-mode":
                         respond = compose_message(get_prices(decoded, False))
                     elif determineMode(message_text) == "price-set-mode":
                         respond = compose_message(get_prices(decoded, True))
