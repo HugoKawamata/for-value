@@ -40,14 +40,16 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
-                    if message_text.lower() == "help":
-                        send_message(sender_id, "Send card names on separate lines to get their prices. Add a '^' to the start of a cardname to see the edition we grab as well.")
-                    else:
-                        decoded = decode_message(message_text)
-                        deets = get_prices(decoded)
-                        respond = compose_message(deets)
+                    decoded = decode_message(message_text)
 
-                        send_message(sender_id, respond)
+                    if determineMode(message_text) == "price-mode":
+                        respond = compose_message(get_prices(decoded, False))
+                    elif determineMode(message_text) == "price-set-mode":
+                        respond = compose_message(get_prices(decoded, True))
+                    else:
+                        respond = "Hi! Type !p followed by a list of cards separated by newlines to get a list of prices, as well as a total sum.\nType !s instead to get set information as well."
+
+                    send_message(sender_id, respond)
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass

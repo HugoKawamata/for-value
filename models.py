@@ -3,26 +3,30 @@ import requests
 from re import sub
 from decimal import Decimal
 
+def determine_mode(message):
+    if len(message.split()) > 0:
+        if message.split()[0].lower() == "!p":
+            return "price-mode"
+        elif message.split()[0].lower() == "!s":
+            return "price-set-mode"
+        else:
+            return "help-mode"
+    else:
+        return "help-mode"
+
+
 def decode_message(message):
-    cardList = message.split("\n")
+    demodedMessage = message.replace("!p", "").replace("!s", "")
+    cardList = demodedMessage.split("\n")
     searchList = []
     for card in cardList:
-        search = card.replace(",", "%2C")
-        search = search.replace(" ", "+")
-        search = search.replace("'", "%27s")
-        search = search.replace(":", "%3A")
-        search = search.replace("!", "%21")
-        search = search.replace("&", "%26")
+        search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27s").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         searchList.append(search)
     return searchList
 
-def get_prices(cardList):
+def get_prices(cardList, getEdition):
     deetsList = []
     for card in cardList:
-        getEdition = False
-        if card[0] == "^":
-            getEdition = True
-            card = card[1:]
 
         cardDeets = {"name": "error", "edition": "error", "price": "error"}
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
