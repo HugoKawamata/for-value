@@ -41,10 +41,11 @@ def webhook():
                     message_text = messaging_event["message"]["text"]  # the message's text
 
                     decoded = decode_message(message_text)
+                    mode = determine_mode(message_text)
 
-                    if determine_mode(message_text) == "price-mode":
+                    if mode == "price-mode":
                         respond = compose_message(get_prices(decoded, False))
-                    elif determineMode(message_text) == "price-set-mode":
+                    elif mode == "price-set-mode":
                         respond = compose_message(get_prices(decoded, True))
                     else:
                         respond = "Hi! Type !p followed by a list of cards separated by newlines to get a list of prices, as well as a total sum.\nType !s instead to get set information as well."
