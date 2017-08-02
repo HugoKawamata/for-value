@@ -48,7 +48,7 @@ def webhook():
                     elif mode == "price-set-mode":
                         respond = compose_message(get_prices(decoded, True))
                     else:
-                        respond = "Message the page \"!p [cardname]\" for price information.\n\nMessage the page \"!s [cardname]\" for set and price information.\n\nYou can ask for multiple cards by putting them on new lines in the same message."
+                        respond = "Send \"!p [cardname]\" for price information.\n\nSend \"!s [cardname]\" for set and price information.\n\nYou can ask for multiple cards by putting them on new lines in the same message."
 
                     send_message(sender_id, respond)
 

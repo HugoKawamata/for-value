@@ -53,13 +53,19 @@ def compose_message(deetsList):
     message = ""
     totalCost = 0
     for deet in deetsList:
-        message += deet["name"]
-        if deet["edition"] != "error":
-            message += " - " + deet["edition"]
-        message += ": "
-        message += deet["price"] + "\n"
-        if deet["price"] != "error":
-            totalCost += Decimal(sub(r'[^\d.]', '', deet["price"]))
+        if deet["name"] != "error":
+            message += deet["name"]
+            if deet["edition"] != "error":
+                message += " - " + deet["edition"]
+            message += ": "
+            message += deet["price"] + "\n"
+            if deet["price"] != "error":
+                totalCost += Decimal(sub(r'[^\d.]', '', deet["price"]))
     if len(deetsList) > 1:
+        if message == "":
+            message = "No cards were found for those searches. Please ensure spelling is correct, and try again."
         message += "Total Price: $" + str(totalCost)
+    else:
+        if message == "":
+            message = "No cards were found for that search. Please ensure spelling is correct, and try again."
     return message
