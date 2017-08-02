@@ -16,7 +16,7 @@ def determine_mode(message):
 
 
 def decode_message(message):
-    demodedMessage = message.replace("!p", "").replace("!s", "")
+    demodedMessage = message.lower().replace("!p", "").replace("!s", "")
     cardList = demodedMessage.split("\n")
     searchList = []
     for card in cardList:
