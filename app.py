@@ -25,7 +25,6 @@ def verify():
 def webhook():
 
     # endpoint for processing incoming messaging events
-    log(request.data)
     data = request.get_json()
     log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
@@ -59,7 +58,10 @@ def webhook():
                     pass
 
                 if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
-                    pass
+                    sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
+                    respond = "Send \"!p [cardname]\" for price information.\n\nSend \"!s [cardname]\" for set and price information.\n\nYou can ask for multiple cards by putting them on new lines in the same message."
+                    send_message(sender_id, respond)
+                    
 
     return "ok", 200
 
