@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>
+            Test messages for value
+        </title>
+    </head>
+    <body>
+        <form>
+            <label for="message">Message</message>
+            <input type="text" name="message" id="message">
+            <input type="submit" value="send" onclick="jsonifyMsg()">
+        </form>
+        <script src="http://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script>
+            function jsonifyMsg() {
+                var message = document.getElementById("message").value;
+                var jmsg = {
+                    'object': 'page', 
+                    'entry': [
+                        {
+                            'id': '105450440150445', 
+                            'time': 1501717899854, 
+                            'messaging': [
+                                {
+                                    'message': {
+                                        'seq': 722634, 
+                                        'text': message, 
+                                        'mid': 'mid.$cAAAFG7VCCedj1qHxX1dpVypPDVTi'
+                                    }, 
+                                    'sender': {
+                                        'id': '1528753840478227'
+                                    }, 
+                                    'recipient': {
+                                        'id': '105450440150445'
+                                    }, 
+                                    'timestamp': 1501717899615
+                                }
+                            ]
+                        }
+                    ]
+                };
+                fetch('/',
+                    {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jmsg)
+                    }
+                )
+            }
+        </script>
+    </body>
+</html>

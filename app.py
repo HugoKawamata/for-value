@@ -9,6 +9,10 @@ from models import *
 
 app = Flask(__name__)
 
+@app.route('/testmessage', methods=['GET'])
+def testmessage():
+    return app.send_static_file("testmessage.html")
+
 @app.route('/', methods=['GET'])
 def verify():
     # when the endpoint is registered as a webhook, it must echo back
@@ -39,12 +43,10 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
-                    decoded = decode_message(message_text)
                     mode = determine_mode(message_text)
 
-                    if mode == "price-mode":
-                        respond = compose_message(get_prices(decoded, False))
-                    elif mode == "price-set-mode":
+                    if mode == "price-set-mode":
+                        decoded = decode_message(message_text)
                         respond = compose_message(get_prices(decoded, True))
                     else:
                         respond = "Send \"!p [cardname]\" for price information.\n\nSend \"!s [cardname]\" for set and price information.\n\nYou can ask for multiple cards by putting them on new lines in the same message."
@@ -71,7 +73,7 @@ def send_message(recipient_id, message_text):
     log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+        "access_token": os.environ.get("PAGE_ACCESS_TOKEN")
     }
     headers = {
         "Content-Type": "application/json"
