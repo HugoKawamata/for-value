@@ -113,12 +113,13 @@ def compose_message(pricesResult):
             #message += deet["price"] + "\n"
             if deet["price"] != "error":
                 newPrice = convert_price(deet["price"], pricesResult["currency"])
-                message += newPrice
-                totalCost += Decimal(sub(r'[^\d.]', '', newPrice)) # Might not work with letters prefixing the dollars
+                message += newPrice + "\n"
+                totalCost += Decimal(sub(r'[^\d.]', '', newPrice))
     if len(pricesResult["deets"]) > 1:
         if message == "":
             message = "No cards were found for those searches. Please ensure spelling is correct, and try again."
-        message += "Total Price: $" + str(totalCost)
+        else:
+            message += "Total Price: $" + str(totalCost)
     else:
         if message == "":
             message = "No cards were found for that search. Please ensure spelling is correct, and try again."
