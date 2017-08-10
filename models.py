@@ -4,6 +4,7 @@ from re import sub
 from decimal import Decimal
 import json
 import sys
+from mtgsdk import Card
 
 def determine_mode(message):
     if len(message.split()) > 0:
@@ -56,7 +57,7 @@ def decode_message(message):
     cardList = demodedMessage.split("\n")
     searchList = []
     for card in cardList:
-        search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27s").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
+        search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         searchList.append(search)
     result = {"currency": currency, "searches": searchList}
     log(result)
