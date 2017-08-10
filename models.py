@@ -66,12 +66,22 @@ def get_prices(decodedMsg, getEdition):
     deetsList = []
     for card in decodedMsg["searches"]:
 
+        # Initially search alphabetically, because "most popular" can result in Alpha and masterpiece cards showing up
         cardDeets = {"name": "error", "edition": "error", "price": "error"}
-        page = requests.get("http://www.cardkingdom.com/catalog/search?filter%5Bipp%5D=20&filter%5Bsort%5D=most_popular&filter%5Bname%5D=" + card)
+        page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
         singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
-        name = singleItemList[0] if len(singleItemList) > 0 else "error"
+        name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
+
+        if "(" in name: # If it gets a funky result, like an emblem or a duel deck anthology result, we search most popular instead.
+            page = requests.get("http://www.cardkingdom.com/catalog/search?filter%5Bipp%5D=20&filter%5Bsort%5D=most_popular&filter%5Bname%5D=" + card)
+            tree = html.fromstring(page.content)
+
+            singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
+            name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
+
+
         cardDeets["name"] = name
 
         if getEdition:
