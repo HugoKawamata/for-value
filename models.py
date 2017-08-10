@@ -30,6 +30,9 @@ def decode_message(message):
     searchList = []
     for card in cardList:
         search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
+        if "\"" in card: # User is trying to use quotes to search for an exact name
+            search = search.replace("\"", "")
+            search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !!
         if "!foil" in card:
             search = search.replace("%21foil", "")
             search = search + "&filter[tab]=mtg_foil"
