@@ -4,7 +4,6 @@ from re import sub
 from decimal import Decimal
 import json
 import sys
-from mtgsdk import Card
 
 def determine_mode(message):
     if len(message.split()) > 0:
@@ -68,7 +67,7 @@ def get_prices(decodedMsg, getEdition):
     for card in decodedMsg["searches"]:
 
         cardDeets = {"name": "error", "edition": "error", "price": "error"}
-        page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
+        page = requests.get("http://www.cardkingdom.com/catalog/search?filter%5Bipp%5D=20&filter%5Bsort%5D=most_popular&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
         singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
