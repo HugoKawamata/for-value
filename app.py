@@ -49,10 +49,10 @@ def webhook():
                         decoded = decode_message(message_text)
                         respond = compose_message(get_prices(decoded, True))
                     else:
-                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n \
-                                   Currency Conversion: !USD (or your currency code) at the beginning of the message.\n \
-                                   Foils: !foil before the cardname will grab a foil version of that card.\n \
-                                   Prices are taken from www.cardkingdom.com"
+                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n" + \
+                                "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n" + \
+                                "Foils: !foil before the cardname will grab a foil version of that card.\n" + \
+                                "Prices are taken from www.cardkingdom.com"
 
                     send_message(sender_id, respond)
 
