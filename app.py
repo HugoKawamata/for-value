@@ -49,7 +49,10 @@ def webhook():
                         decoded = decode_message(message_text)
                         respond = compose_message(get_prices(decoded, True))
                     else:
-                        respond = "Send \"!p [cardname]\" for price information.\n\nSpecify a currency like this: \"!p !USD [cardname]\" (default is AUD).\n\nYou can ask for multiple cards by putting them on new lines in the same message."
+                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n \
+                                   Currency Conversion: !USD (or your currency code) at the beginning of the message.\n \
+                                   Foils: !foil before the cardname will grab a foil version of that card.\n \
+                                   Prices are taken from www.cardkingdom.com"
 
                     send_message(sender_id, respond)
 
@@ -61,7 +64,7 @@ def webhook():
 
                 if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
                     sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
-                    respond = "Send \"!p [cardname]\" for price information.\n\nSpecify a currency like this: \"!p !USD [cardname]\" (default is AUD).\n\nYou can ask for multiple cards by putting them on new lines in the same message."
+                    respond = "Type a cardname to get its price!\n\nType !help to see advanced options."
                     send_message(sender_id, respond)
                     
 
