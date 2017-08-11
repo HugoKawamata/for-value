@@ -114,7 +114,7 @@ def compose_message(pricesResult):
     message = ""
     totalCost = 0
     for deet in pricesResult["deets"]:
-        if deet["name"] != "error":
+        if deet["name"] != "error" and deet["name"] != "FOIL error":
             message += deet["name"]
             if deet["edition"] != "error":
                 message += " - " + deet["edition"]
