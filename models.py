@@ -2,6 +2,7 @@ from lxml import html
 import requests
 from re import sub
 from decimal import Decimal
+from difflib import SequenceMatcher
 import json
 import sys
 
@@ -16,8 +17,8 @@ def determine_mode(message):
 
 
 def decode_message(message):
-    currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR",
-        "ILS","INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
+    currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
+        "INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
     # AUD by default
     currency = "AUD"
 
@@ -32,7 +33,7 @@ def decode_message(message):
         search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         if "\"" in card: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
-            search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !!
+            search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
         if "!foil" in card:
             search = search.replace("%21foil", "")
             search = search + "&filter[tab]=mtg_foil"
@@ -44,31 +45,47 @@ def decode_message(message):
 def get_prices(decodedMsg, getEdition):
     deetsList = []
     for card in decodedMsg["searches"]:
+        resultNumber = 1
 
         # Initially search alphabetically, because "most popular" can result in Alpha and masterpiece cards showing up
         cardDeets = {"name": "error", "edition": "error", "price": "error"}
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
-        singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
-        name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
+        if "%24" in card: # The user wants to search for exactly this card.
+            firstPageNames = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])//text()")
+            name = "error" # Failsafe
+            for gotname in firstPageNames: # Check all the names in the search results one by one
+                # Convert search back to real english for string comparison
+                realname = card.replace("%2C", ",").replace("+", " ").replace("%27", "'").replace("%3A", ":") \
+                .replace("%21", "!").replace("%26", "&").replace("&filter[tab]=mtg_foil", "").replace("%24", "")
 
-        if "(" in name: # If it gets a funky result, like an emblem or a duel deck anthology result, we search most popular instead.
-            page = requests.get("http://www.cardkingdom.com/catalog/search?filter%5Bipp%5D=20&filter%5Bsort%5D=most_popular&filter%5Bname%5D=" + card)
-            tree = html.fromstring(page.content)
+                # If the query and the result are "close enough" (0.8), return that result (and mark its number in the list)
+                if SequenceMatcher(None, realname.lower(), gotname.lower()).ratio() > 0.8:
+                    name = gotname
+                else:
+                    resultNumber += 1
 
+        else: # User didn't put quotes in their search, so we do a smart search
             singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
             name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
+
+            if "(" in name: # If it gets a funky result, like an emblem or a duel deck anthology result, we search most popular instead.
+                page = requests.get("http://www.cardkingdom.com/catalog/search?filter%5Bipp%5D=20&filter%5Bsort%5D=most_popular&filter%5Bname%5D=" + card)
+                tree = html.fromstring(page.content)
+
+                singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
+                name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
 
 
         cardDeets["name"] = name
 
         if getEdition:
-            singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[1]//text()")
+            singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[" + str(resultNumber) + "]//text()")
             edition = singleItemList[0] if len(singleItemList) > 0 else "error"
             cardDeets["edition"] = " ".join(edition.split()) # Remove whitespace
 
-        singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='stylePrice'])[1]//text()")
+        singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='stylePrice'])[" + str(((resultNumber - 1) * 4) + 1) + "]//text()")
         price = singleItemList[0] if len(singleItemList) > 0 else "error"
         cardDeets["price"] = " ".join(price.split())
 
