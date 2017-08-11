@@ -132,7 +132,10 @@ def compose_message(pricesResult):
     else:
         if message == "":
             message = "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help."
-    return message
+    if len(message) < 640:
+        return message
+    else: 
+        return "Whoa, too many cards. Facebook limits the length of text messages, so I can't send that result back. Try fewer cards."
 
 def log(message):  # simple wrapper for logging to stdout on heroku
     print(str(message))
