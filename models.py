@@ -79,6 +79,9 @@ def get_prices(decodedMsg, getEdition):
 
 
         cardDeets["name"] = name
+        if "&filter[tab]=mtg_foil" in card: # This isn't triggered if the user directly inputs this string because the
+                                            # "&" at the start is changed to "%26" lmao
+            cardDeets["name"] = "FOIL " + cardDeets["name"]
 
         if getEdition:
             singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])[" + str(resultNumber) + "]//text()")
