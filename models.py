@@ -126,12 +126,12 @@ def compose_message(pricesResult):
                 totalCost += Decimal(sub(r'[^\d.]', '', newPrice))
     if len(pricesResult["deets"]) > 1:
         if message == "":
-            message = "No cards were found for those searches. Please ensure spelling is correct, and try again."
+            message = "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help."
         else:
             message += "Total Price: $" + str(totalCost)
     else:
         if message == "":
-            message = "No cards were found for that search. Please ensure spelling is correct, and try again."
+            message = "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help."
     return message
 
 def log(message):  # simple wrapper for logging to stdout on heroku
