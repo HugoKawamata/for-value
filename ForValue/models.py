@@ -26,7 +26,7 @@ def decode_message(message):
     if message.split()[0][0] == "!" and message.split()[0][1:].upper() in currencyList:
         currency = message.split()[0][1:].upper()
         message = message.replace(message.split()[0], "") # Then remove the first word (it's the currency command)
-    demodedMessage = message.lower().replace("!p", "").replace("!s", "") # In case anyone is still using old syntax, we should remove these strings.
+    demodedMessage = message.lower().replace("!p ", "").replace("!s ", "") # In case anyone is still using old syntax, we should remove these strings.
     cardList = demodedMessage.split("\n")
     searchList = []
     for card in cardList:
@@ -39,7 +39,6 @@ def decode_message(message):
             search = search + "&filter[tab]=mtg_foil"
         searchList.append(search)
     result = {"currency": currency, "searches": searchList}
-    log(result)
     return result
 
 def get_prices(decodedMsg, getEdition):
@@ -103,7 +102,6 @@ def convert_price(price, currency):
     decPrice = Decimal(sub(r'[^\d.]', '', price))
 
     if currency.upper() == "USD":
-        log(decPrice)
         return "USD " + str(decPrice)
     else:
         decPrice = float(decPrice) * data["rates"][currency.upper()]

@@ -5,7 +5,7 @@ import json
 import requests
 from flask import Flask, request
 
-from models import *
+from ForValue.models import *
 
 app = Flask(__name__)
 
@@ -24,13 +24,11 @@ def verify():
 
     return app.send_static_file("privacy.html")
 
-
 @app.route('/', methods=['POST'])
 def webhook():
 
     # endpoint for processing incoming messaging events
     data = request.get_json()
-    log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
     if data["object"] == "page":
 
@@ -49,12 +47,22 @@ def webhook():
                         decoded = decode_message(message_text)
                         respond = compose_message(get_prices(decoded, True))
                     else:
-                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n" + \
-                                "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n" + \
-                                "Foils: !foil before the cardname will grab a foil version of that card.\n" + \
+                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+                                "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
+                                "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
                                 "Prices are taken from www.cardkingdom.com"
 
-                    send_message(sender_id, respond)
+                    if os.environ.get("PAGE_ACCESS_TOKEN") == None: # We're testing
+                        if mode == "price-set-mode":
+                            return str(get_prices(decode_message(message_text), True)) # return a string of the message
+                        else:
+                             return "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+                                    "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
+                                    "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
+                                    "Prices are taken from www.cardkingdom.com"
+
+                    else: # We're live!
+                        send_message(sender_id, respond)
 
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
