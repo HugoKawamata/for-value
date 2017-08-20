@@ -22,9 +22,63 @@ class ForValueTestCase(unittest.TestCase):
   def test_determine_mode_cards(self):
     self.assertEqual("price-set-mode", determine_mode("help"))
 
-  def test_decode_message(self):
+  def test_decode_message_one_card(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": []}
+      {"currency": "AUD", "searches": ["cancel"]},
+      decode_message("cancel")
+    )
+
+  def test_decode_message_two_cards(self):
+    self.assertEqual(
+      {"currency": "AUD", "searches": ["cancel", "counterspell"]},
+      decode_message("cancel\ncounterspell")
+    )
+
+  def test_decode_message_foil(self):
+    self.assertEqual(
+      {"currency": "AUD", "searches": ["cancel&filter[tab]=mtg_foil"]},
+      decode_message("!foil cancel")
+    )
+
+  def test_decode_message_complex_1(self):
+    self.assertEqual(
+      {"currency": "AUD", "searches": ["ach%21+hans%2C+run%21"]},
+      decode_message("ach! Hans, run!")
+    )
+
+  def test_decode_message_complex_1(self):
+    self.assertEqual(
+      {"currency": "AUD", "searches": ["look+at+me%2C+i%27m+r%26d"]},
+      decode_message("Look at Me, I'm R&D")
+    )
+
+  def test_decode_alt_currency(self):
+    self.assertEqual(
+      {"currency": "USD", "searches": ["+cancel"]},
+      decode_message("!USD cancel")
+    )
+
+  def test_compose_invalid_cards(self):
+    self.assertEqual(
+      "No card was found for that searche. Please ensure spelling is correct, and try again. Type !help for help.",
+      compose_message({
+        "currency": "AUD",
+        "deets": [
+          {"name": "error", "price": "error", "edition": "error"}
+        ]
+      })
+    )
+
+  def test_compose_invalid_cards(self):
+    self.assertEqual(
+      "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help.",
+      compose_message({
+        "currency": "AUD",
+        "deets": [
+          {"name": "error", "price": "error", "edition": "error"},
+          {"name": "error", "price": "error", "edition": "error"}
+        ]
+      })
     )
 
   def test_one_cardname(self):

@@ -35,7 +35,7 @@ def decode_message(message):
             search = search.replace("\"", "")
             search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
         if "!foil" in card:
-            search = search.replace("%21foil", "")
+            search = search.replace("%21foil+", "")
             search = search + "&filter[tab]=mtg_foil"
         searchList.append(search)
     result = {"currency": currency, "searches": searchList}
