@@ -1,1 +1,1 @@
-web: gunicorn forvalue:app:app --log-file=-
+web: gunicorn forvalue:app --log-file=-
