@@ -5,7 +5,7 @@ import json
 import requests
 from flask import Flask, request
 
-from ForValue.models import *
+from models import *
 
 app = Flask(__name__)
 

@@ -1,6 +1,7 @@
 import os
 import sys
-from ForValue.app import app
+from models import *
+from app import app
 import unittest
 import tempfile
 import json
@@ -14,6 +15,17 @@ class ForValueTestCase(unittest.TestCase):
 
   def tearDown(self):
     return
+
+  def test_determine_mode_help(self):
+    self.assertEqual("help-mode", determine_mode("!help"))
+
+  def test_determine_mode_cards(self):
+    self.assertEqual("price-set-mode", determine_mode("help"))
+
+  def test_decode_message(self):
+    self.assertEqual(
+      {"currency": "AUD", "searches": []}
+    )
 
   def test_one_cardname(self):
     msg = {
@@ -214,6 +226,39 @@ class ForValueTestCase(unittest.TestCase):
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
     self.assertEqual("FOIL Cancel", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
+
+  def test_quote_cardname(self):
+    msg = {
+      'object': 'page', 
+      'entry': [
+        {
+          'id': '105450440150445', 
+          'time': 1501717899854, 
+          'messaging': [
+            {
+              'message': {
+                'seq': 722634, 
+                'text': "\"shock\"", 
+                'mid': 'mid.$cAAAFG7VCCedj1qHxX1dpVypPDVTi'
+              }, 
+              'sender': {
+                'id': '1528753840478227'
+              }, 
+              'recipient': {
+                'id': '105450440150445'
+              }, 
+              'timestamp': 1501717899615
+            }
+          ]
+        }
+      ]
+    }
+
+    jsonMsg = json.dumps(msg)
+
+    response = self.app.post("/", data=jsonMsg, content_type="application/json")
+    self.assertEqual("Shock", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
+
     
 if __name__ == "__main__":
   unittest.main()
