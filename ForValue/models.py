@@ -15,6 +15,27 @@ def determine_mode(message):
     else:
         return "price-set-mode"
 
+def represents_int(str):
+    try:
+        int(str)
+        return True
+    except ValueError:
+        return False
+
+"""
+    Takes a line of a message (called `card` in decodeMessage()) and returns a number
+    which was specified at the start as the quantity of the card needed
+"""
+def find_quantity(card):
+    # If user specified quantity, set quantity
+    if represents_int(card.split()[0]):
+        if int(card.split()[0]) < 1:
+            return 1
+        else:
+            return int(card.split()[0])
+    else:
+        return False # Players want one card by default, but return False to show quantity was not found
+
 
 def decode_message(message):
     currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
@@ -30,6 +51,12 @@ def decode_message(message):
     cardList = demodedMessage.split("\n")
     searchList = []
     for card in cardList:
+        quantity = find_quantity(card)
+        if quantity == False:
+            quantity = 1
+        else: # If quantity was specified, remove number
+            card = card.replace(card.split()[0], "")
+
         search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         if "\"" in card: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
@@ -37,17 +64,26 @@ def decode_message(message):
         if "!foil" in card:
             search = search.replace("%21foil+", "")
             search = search + "&filter[tab]=mtg_foil"
-        searchList.append(search)
+        searchList.append({"search": search, "quantity": quantity})
     result = {"currency": currency, "searches": searchList}
     return result
 
+"""
+    @params: decodedmessage: Takes a message that has been put through decode_message()
+             which should be a dictionary like this: {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
+    @return: a similar dictionary {"currency": "USD", "deets": deetsList}
+
+    deetsList is a list of "deets", short for card details (from the search result),
+    {"name": "cancel", "edition": "RTR", "price": "0.20"}
+"""
 def get_prices(decodedMsg, getEdition):
     deetsList = []
-    for card in decodedMsg["searches"]:
+    for query in decodedMsg["searches"]:
+        card = query["search"]
         resultNumber = 1
 
         # Initially search alphabetically, because "most popular" can result in Alpha and masterpiece cards showing up
-        cardDeets = {"name": "error", "edition": "error", "price": "error"}
+        cardDeets = {"name": "error", "edition": "error", "price": "error", "quantity": query["quantity"]}
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
@@ -96,10 +132,11 @@ def get_prices(decodedMsg, getEdition):
     result = {"currency": decodedMsg["currency"], "deets": deetsList}
     return result
 
-def convert_price(price, currency):
+def convert_price(price, quantity, currency):
     conversions = requests.get("http://api.fixer.io/latest?base=USD").text
     data = json.loads(conversions)
     decPrice = Decimal(sub(r'[^\d.]', '', price))
+    decPrice *= quantity
 
     if currency.upper() == "USD":
         return "USD " + str(decPrice)
@@ -113,13 +150,14 @@ def compose_message(pricesResult):
     totalCost = 0
     for deet in pricesResult["deets"]:
         if deet["name"] != "error" and deet["name"] != "FOIL error":
+            if deet["quantity"] > 1:
+                message += str(deet["quantity"]) + " "
             message += deet["name"]
             if deet["edition"] != "error":
                 message += " - " + deet["edition"]
             message += ": "
-            #message += deet["price"] + "\n"
             if deet["price"] != "error":
-                newPrice = convert_price(deet["price"], pricesResult["currency"])
+                newPrice = convert_price(deet["price"], deet["quantity"], pricesResult["currency"])
                 message += newPrice + "\n"
                 totalCost += Decimal(sub(r'[^\d.]', '', newPrice))
     if len(pricesResult["deets"]) > 1:

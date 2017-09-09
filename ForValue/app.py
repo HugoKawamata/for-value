@@ -54,12 +54,13 @@ def webhook():
 
                     if os.environ.get("PAGE_ACCESS_TOKEN") == None: # We're testing
                         if mode == "price-set-mode":
-                            return str(get_prices(decode_message(message_text), True)) # return a string of the message
+                            log(str(get_prices(decode_message(message_text), True))) # return a string of the message
+                            log(compose_message(get_prices(decode_message(message_text), True))) # return a string of the message
                         else:
-                             return "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+                            log("You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
                                     "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
                                     "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
-                                    "Prices are taken from www.cardkingdom.com"
+                                    "Prices are taken from www.cardkingdom.com")
 
                     else: # We're live!
                         send_message(sender_id, respond)
