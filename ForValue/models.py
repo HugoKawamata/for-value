@@ -58,7 +58,7 @@ def message_to_search_list(message):
     for card in cardList:
         foil = False
         if "!foil" in card:
-            search = search.replace("!foil ", "")
+            card = card.replace("!foil ", "")
             foil = True # Gotta handle foil setting up here to make room for quantity setting
             # But gotta add the foil search string after url adjustment happens,
             # otherwise the special characters will get replaced
