@@ -1,7 +1,7 @@
 from lxml import html
 import requests
 from re import sub
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 import json
 import sys
