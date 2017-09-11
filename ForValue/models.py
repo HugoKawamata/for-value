@@ -6,6 +6,7 @@ from difflib import SequenceMatcher
 import json
 import sys
 
+
 def determine_mode(message):
     if len(message.split()) > 0:
         if message.split()[0].lower() == "!help":
@@ -22,11 +23,11 @@ def represents_int(str):
     except ValueError:
         return False
 
+def find_quantity(card):
 """
     Takes a line of a message (called `card` in decodeMessage()) and returns a number
     which was specified at the start as the quantity of the card needed
 """
-def find_quantity(card):
     # If user specified quantity, set quantity
     if represents_int(card.split()[0]):
         if int(card.split()[0]) < 1:
@@ -68,15 +69,18 @@ def decode_message(message):
     result = {"currency": currency, "searches": searchList}
     return result
 
+def get_prices(decodedMsg, getEdition):
 """
-    @params: decodedmessage: Takes a message that has been put through decode_message()
-             which should be a dictionary like this: {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
-    @return: a similar dictionary {"currency": "USD", "deets": deetsList}
+    Takes: decodedmessage: a facebook message that has been put through decode_message()
+             which should be a dictionary like this: 
+             {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
+             currency is a string representing a currency,
+             searches is a list of dictionaries containing the search (the treated cardname) and the quantity
+    Returns: a similar dictionary {"currency": "USD", "deets": deetsList}
 
     deetsList is a list of "deets", short for card details (from the search result),
     {"name": "cancel", "edition": "RTR", "price": "0.20"}
 """
-def get_prices(decodedMsg, getEdition):
     deetsList = []
     for query in decodedMsg["searches"]:
         card = query["search"]
