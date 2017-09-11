@@ -58,7 +58,7 @@ def message_to_search_list(message):
     for card in cardList:
         foil = False
         if "!foil" in card:
-            search = search.replace("!foil ", "")
+            card = card.replace("!foil ", "")
             foil = True
         quantity = find_quantity(card)
         if quantity == False:
