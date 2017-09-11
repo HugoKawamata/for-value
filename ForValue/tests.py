@@ -24,61 +24,52 @@ class ForValueTestCase(unittest.TestCase):
 
   def test_decode_message_one_card(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": ["cancel"]},
-      decode_message("cancel")
+      [{"search": "cancel", "quantity": 1}],
+      message_to_search_list("cancel")
     )
 
-  def test_decode_message_two_cards(self):
+  def test_to_search_list_two_cards(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": ["cancel", "counterspell"]},
-      decode_message("cancel\ncounterspell")
+      [{"search": "cancel", "quantity": 1},
+      {"search": "counterspell", "quantity": 1}],
+      message_to_search_list("cancel\ncounterspell")
     )
 
-  def test_decode_message_foil(self):
+  def test_to_search_list_foil(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": ["cancel&filter[tab]=mtg_foil"]},
-      decode_message("!foil cancel")
+      [{"search": "cancel&filter[tab]=mtg_foil", "quantity": 1}],
+      message_to_search_list("!foil cancel")
     )
 
-  def test_decode_message_complex_1(self):
+  def test_to_search_list_complex_1(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": ["ach%21+hans%2C+run%21"]},
-      decode_message("ach! Hans, run!")
+      [{"search": "ach%21+hans%2C+run%21", "quantity": 1}],
+      message_to_search_list("ach! hans, run!")
     )
 
-  def test_decode_message_complex_1(self):
+  def test_to_search_list_complex_2(self):
     self.assertEqual(
-      {"currency": "AUD", "searches": ["look+at+me%2C+i%27m+r%26d"]},
-      decode_message("Look at Me, I'm R&D")
+      [{"search": "look+at+me%2C+i%27m+r%26d", "quantity": 1}],
+      message_to_search_list("look at me, i'm r&d")
     )
 
-  def test_decode_alt_currency(self):
+  def test_to_currency_alt_currency(self):
+    message = "!USD cancel"
     self.assertEqual(
-      {"currency": "USD", "searches": ["+cancel"]},
-      decode_message("!USD cancel")
+      {"currency": "USD", "message": "cancel"},
+      message_to_currency_and_message(message)
     )
 
-  def test_compose_invalid_cards(self):
+  def test_compose_invalid_card(self):
     self.assertEqual(
-      "No card was found for that searche. Please ensure spelling is correct, and try again. Type !help for help.",
-      compose_message({
-        "currency": "AUD",
-        "deets": [
-          {"name": "error", "price": "error", "edition": "error"}
-        ]
-      })
+      "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help.",
+      compose_message("jfejfijiej")
     )
 
   def test_compose_invalid_cards(self):
     self.assertEqual(
       "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help.",
-      compose_message({
-        "currency": "AUD",
-        "deets": [
-          {"name": "error", "price": "error", "edition": "error"},
-          {"name": "error", "price": "error", "edition": "error"}
-        ]
-      })
+      compose_message("uhdehwifh\n hduewhdiuhw")
     )
 
   def test_one_cardname(self):
@@ -111,8 +102,9 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("Cancel", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
-    self.assertEqual("AUD", ast.literal_eval((response.data).decode("utf-8"))["currency"])
+    reply = response.data.decode("utf-8")
+    self.assertEqual(True, "Cancel" in reply)
+    self.assertEqual(True, "AUD" in reply)
 
   def test_one_cardname_and_currency(self):
     msg = {
@@ -144,8 +136,9 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("Cancel", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
-    self.assertEqual("USD", ast.literal_eval((response.data).decode("utf-8"))["currency"])
+    reply = response.data.decode("utf-8")
+    self.assertEqual(True, "Cancel" in reply)
+    self.assertEqual(True, "USD" in reply)
 
   def test_help(self):
     msg = {
@@ -214,7 +207,8 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("error", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
+    self.assertEqual("No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help.",\
+      response.data.decode("utf-8"))
 
   def test_two_cardnames(self):
     msg = {
@@ -246,8 +240,9 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("Cancel", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
-    self.assertEqual("Counterspell", ast.literal_eval((response.data).decode("utf-8"))["deets"][1]["name"])
+    reply = response.data.decode("utf-8")
+    self.assertEqual(True, "Cancel " in reply)
+    self.assertEqual(True, "Counterspell " in reply)
 
   def test_foil_cardname(self):
     msg = {
@@ -279,7 +274,8 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("FOIL Cancel", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
+    reply = response.data.decode("utf-8")
+    self.assertEqual(True, "FOIL Cancel " in reply)
 
   def test_quote_cardname(self):
     msg = {
@@ -311,7 +307,8 @@ class ForValueTestCase(unittest.TestCase):
     jsonMsg = json.dumps(msg)
 
     response = self.app.post("/", data=jsonMsg, content_type="application/json")
-    self.assertEqual("Shock", ast.literal_eval((response.data).decode("utf-8"))["deets"][0]["name"])
+    reply = response.data.decode("utf-8")
+    self.assertEqual(True, "Shock " in reply)
 
     
 if __name__ == "__main__":

@@ -44,8 +44,7 @@ def webhook():
                     mode = determine_mode(message_text)
 
                     if mode == "price-set-mode":
-                        decoded = decode_message(message_text)
-                        respond = compose_message(get_prices(decoded, True))
+                        respond = compose_message(message_text)
                     else:
                         respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
                                 "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
@@ -54,13 +53,15 @@ def webhook():
 
                     if os.environ.get("PAGE_ACCESS_TOKEN") == None: # We're testing
                         if mode == "price-set-mode":
-                            log(str(get_prices(decode_message(message_text), True))) # return a string of the message
-                            log(compose_message(get_prices(decode_message(message_text), True))) # return a string of the message
+                            log(compose_message(message_text)) # return a string of the message
+                            return compose_message(message_text)
                         else:
-                            log("You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+                            helpMsg = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
                                     "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
                                     "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
-                                    "Prices are taken from www.cardkingdom.com")
+                                    "Prices are taken from www.cardkingdom.com"
+                            log(helpMsg)
+                            return(helpMsg)
 
                     else: # We're live!
                         send_message(sender_id, respond)

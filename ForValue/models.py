@@ -24,10 +24,8 @@ def represents_int(str):
         return False
 
 def find_quantity(card):
-"""
-    Takes a line of a message (called `card` in decodeMessage()) and returns a number
-    which was specified at the start as the quantity of the card needed
-"""
+    """Takes a line of a message (called `card` in decodeMessage()) and returns a number
+    which was specified at the start as the quantity of the card needed"""
     # If user specified quantity, set quantity
     if represents_int(card.split()[0]):
         if int(card.split()[0]) < 1:
@@ -37,8 +35,9 @@ def find_quantity(card):
     else:
         return False # Players want one card by default, but return False to show quantity was not found
 
-
-def decode_message(message):
+def message_to_currency_and_message(message):
+    """Takes: a raw, untampered-with facebook message, possibly containing a currency command
+    Returns: a dictionary with the currency specified and the message with the currency command removed"""
     currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
         "INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
     # AUD by default
@@ -47,10 +46,15 @@ def decode_message(message):
     # If the first character of the message is "!" and the first word is in the currency list, set the currency to that.
     if message.split()[0][0] == "!" and message.split()[0][1:].upper() in currencyList:
         currency = message.split()[0][1:].upper()
-        message = message.replace(message.split()[0], "") # Then remove the first word (it's the currency command)
-    demodedMessage = message.lower().replace("!p ", "").replace("!s ", "") # In case anyone is still using old syntax, we should remove these strings.
-    cardList = demodedMessage.split("\n")
+        message = message.replace(message.split()[0] + " ", "") # Then remove the first word (it's the currency command)
+    message = message.lower().replace("!p ", "").replace("!s ", "") # In case anyone is still using old syntax, we should remove these strings.
+    return {"currency": currency, "message": message}
+
+def message_to_search_list(message):
+    """Takes: a facebook message with the currency command removed
+    Returns: a dictionary of searches, which will be fed into the Card Kingdom search engine"""
     searchList = []
+    cardList = message.split("\n")
     for card in cardList:
         quantity = find_quantity(card)
         if quantity == False:
@@ -66,12 +70,11 @@ def decode_message(message):
             search = search.replace("%21foil+", "")
             search = search + "&filter[tab]=mtg_foil"
         searchList.append({"search": search, "quantity": quantity})
-    result = {"currency": currency, "searches": searchList}
-    return result
+    return searchList
+
 
 def get_prices(decodedMsg, getEdition):
-"""
-    Takes: decodedmessage: a facebook message that has been put through decode_message()
+    """Takes: decodedmessage: a facebook message that has been put through decode_message()
              which should be a dictionary like this: 
              {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
              currency is a string representing a currency,
@@ -79,8 +82,7 @@ def get_prices(decodedMsg, getEdition):
     Returns: a similar dictionary {"currency": "USD", "deets": deetsList}
 
     deetsList is a list of "deets", short for card details (from the search result),
-    {"name": "cancel", "edition": "RTR", "price": "0.20"}
-"""
+    {"name": "cancel", "edition": "RTR", "price": "0.20"}"""
     deetsList = []
     for query in decodedMsg["searches"]:
         card = query["search"]
@@ -149,31 +151,35 @@ def convert_price(price, quantity, currency):
         return currency.upper() + " " + str(round(decPrice, 2))
 
 
-def compose_message(pricesResult):
-    message = ""
+def compose_message(message):
+    reply = ""
+    currencyMessage = message_to_currency_and_message(message)
+    searchList = message_to_search_list(currencyMessage["message"])
+    result = {"currency": currencyMessage["currency"], "searches": searchList}
+    pricesResult = get_prices(result, True)
     totalCost = 0
     for deet in pricesResult["deets"]:
         if deet["name"] != "error" and deet["name"] != "FOIL error":
             if deet["quantity"] > 1:
-                message += str(deet["quantity"]) + " "
-            message += deet["name"]
+                reply += str(deet["quantity"]) + " "
+            reply += deet["name"]
             if deet["edition"] != "error":
-                message += " - " + deet["edition"]
-            message += ": "
+                reply += " - " + deet["edition"]
+            reply += ": "
             if deet["price"] != "error":
                 newPrice = convert_price(deet["price"], deet["quantity"], pricesResult["currency"])
-                message += newPrice + "\n"
+                reply += newPrice + "\n"
                 totalCost += Decimal(sub(r'[^\d.]', '', newPrice))
     if len(pricesResult["deets"]) > 1:
-        if message == "":
-            message = "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help."
+        if reply == "":
+            reply = "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help."
         else:
-            message += "Total Price: $" + str(totalCost)
+            reply += "Total Price: $" + str(totalCost)
     else:
-        if message == "":
-            message = "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help."
-    if len(message) < 640:
-        return message
+        if reply == "":
+            reply = "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help."
+    if len(reply) < 640:
+        return reply
     else: 
         return "Whoa, too many cards. Facebook limits the length of text messages, so I can't send that result back. Try fewer cards."
 
