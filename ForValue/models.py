@@ -56,6 +56,10 @@ def message_to_search_list(message):
     searchList = []
     cardList = message.split("\n")
     for card in cardList:
+        foil = False
+        if "!foil" in card:
+            search = search.replace("!foil ", "")
+            foil = True
         quantity = find_quantity(card)
         if quantity == False:
             quantity = 1
@@ -63,12 +67,11 @@ def message_to_search_list(message):
             card = card.replace(card.split()[0], "")
 
         search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
+        if foil:
+            search = search + "&filter[tab]=mtg_foil"
         if "\"" in card: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
             search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
-        if "!foil" in card:
-            search = search.replace("%21foil+", "")
-            search = search + "&filter[tab]=mtg_foil"
         searchList.append({"search": search, "quantity": quantity})
     return searchList
 
