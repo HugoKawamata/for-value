@@ -141,7 +141,10 @@ def get_prices(decodedMsg, getEdition):
 def convert_price(price, quantity, currency):
     conversions = requests.get("http://api.fixer.io/latest?base=USD").text
     data = json.loads(conversions)
-    decPrice = Decimal(sub(r'[^\d.]', '', price))
+    try:
+        decPrice = Decimal(sub(r'[^\d.]', '', price))
+    except InvalidOperation:
+        decPrice = 0.0
     decPrice *= quantity
 
     if currency.upper() == "USD":
