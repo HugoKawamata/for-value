@@ -24,8 +24,10 @@ def represents_int(str):
         return False
 
 def find_quantity(card):
-    """Takes a line of a message (called `card` in decodeMessage()) and returns a number
-    which was specified at the start as the quantity of the card needed"""
+    """
+    Takes: a line of a message (called `card` in decodeMessage()) and returns a number
+        which was specified at the start as the quantity of the card needed
+    """
     # If user specified quantity, set quantity
     if represents_int(card.split()[0]):
         if int(card.split()[0]) < 1:
@@ -36,8 +38,10 @@ def find_quantity(card):
         return False # Players want one card by default, but return False to show quantity was not found
 
 def message_to_currency_and_message(message):
-    """Takes: a raw, untampered-with facebook message, possibly containing a currency command
-    Returns: a dictionary with the currency specified and the message with the currency command removed"""
+    """
+    Takes: a raw, untampered-with facebook message, possibly containing a currency command
+    Returns: a dictionary with the currency specified and the message with the currency command removed
+    """
     currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
         "INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
     # AUD by default
@@ -51,8 +55,10 @@ def message_to_currency_and_message(message):
     return {"currency": currency, "message": message}
 
 def message_to_search_list(message):
-    """Takes: a facebook message with the currency command removed
-    Returns: a dictionary of searches, which will be fed into the Card Kingdom search engine"""
+    """
+    Takes: a facebook message with the currency command removed
+    Returns: a dictionary of searches, which will be fed into the Card Kingdom search engine
+    """
     searchList = []
     cardList = message.split("\n")
     for card in cardList:
@@ -77,15 +83,20 @@ def message_to_search_list(message):
 
 
 def get_prices(decodedMsg, getEdition):
-    """Takes: decodedmessage: a facebook message that has been put through decode_message()
-             which should be a dictionary like this: 
-             {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
-             currency is a string representing a currency,
-             searches is a list of dictionaries containing the search (the treated cardname) and the quantity
-    Returns: a similar dictionary {"currency": "USD", "deets": deetsList}
+    """
+    Takes: decodedmessage: a facebook message that has been put through decode_message()
+        which should be a dictionary like this: 
+        {"currency": "USD", "searches": [{"search": "counterspell", "quantity": 1}]}.
+        currency is a string representing a currency,
+        searches is a list of dictionaries containing the search (the treated cardname) and the quantity
 
-    deetsList is a list of "deets", short for card details (from the search result),
-    {"name": "cancel", "edition": "RTR", "price": "0.20"}"""
+    Feeds the list of searches into the Card Kingdom searchbar and grabs the price of the first
+        card that appears
+
+    Returns: a similar dictionary {"currency": "USD", "deets": deetsList}
+        deetsList is a list of "deets", short for card details (from the search result),
+        {"name": "cancel", "edition": "RTR", "price": "0.20"}
+    """
     deetsList = []
     for query in decodedMsg["searches"]:
         card = query["search"]
@@ -142,6 +153,15 @@ def get_prices(decodedMsg, getEdition):
     return result
 
 def convert_price(price, quantity, currency):
+    """
+    Takes: price: A string representing a price e.g. "$2.00"
+           quantity: Number of cards requested (int)
+           currency: A currency code e.g. "USD"
+
+    Converts the price to the specified currency using a conversion API
+
+    Returns: A string containing a currency code and a number representing price e.g. "USD 2.00"
+    """
     conversions = requests.get("http://api.fixer.io/latest?base=USD").text
     data = json.loads(conversions)
     try:
@@ -158,6 +178,13 @@ def convert_price(price, quantity, currency):
 
 
 def compose_message(message):
+    """
+    Takes: a raw facebook message
+
+    Processes the message and grabs the card prices
+
+    Returns: a reply to that faceboook message with card prices
+    """
     reply = ""
     currencyMessage = message_to_currency_and_message(message)
     searchList = message_to_search_list(currencyMessage["message"])
