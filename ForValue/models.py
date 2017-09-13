@@ -4,7 +4,6 @@ from re import sub
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 import json
-from mtgsdk import Set
 import sys
 
 
@@ -46,8 +45,10 @@ def card_query_to_set_name(card):
     """
     if card.split()[0][0] == "!" and len(card.split()[0]) == 4: # Set codes must be 3 letters long
         code = card.split()[0][1:] # Cut off exclamation mark
-        set = Set.find(code).name
-        return set
+        setInfo = requests.get("http://api.deckbrew.com/mtg/sets/" + code.upper()).tex
+        data = json.loads(setInfo)
+        setName = data["name"]
+        return setName
     else:
         return ""
 
