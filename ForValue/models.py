@@ -4,6 +4,7 @@ from re import sub
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 import json
+from mtgsdk import Set, restclient
 import sys
 
 
@@ -36,6 +37,22 @@ def find_quantity(card):
             return int(card.split()[0])
     else:
         return False # Players want one card by default, but return False to show quantity was not found
+
+def card_query_to_set_name(card):
+    """
+    Takes: a card (a line from a facebook message) which has had all other commands removed (quantity, foil, etc)
+        besides the set code
+    Returns: the verbose full set name of the set code given, or an empty string
+    """
+    if card.split()[0][0] == "!" and len(card.split()[0]) == 4: # Set codes must be 3 letters long
+        code = card.split()[0][1:] # Cut off exclamation mark
+        try:
+            set = Set.find(code).name
+        except restclient.MtgException:
+            set = ""
+        return set
+    else:
+        return ""
 
 def message_to_currency_and_message(message):
     """
@@ -71,14 +88,17 @@ def message_to_search_list(message):
             quantity = 1
         else: # If quantity was specified, remove number
             card = card.replace(card.split()[0], "")
-
+        set = card_query_to_set_name(card)
+        if set != "": # If set was specified, remove the set command
+            card = card.replace(card.split()[0], "")
+        
         search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         if foil:
             search = search + "&filter[tab]=mtg_foil"
         if "\"" in card: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
             search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
-        searchList.append({"search": search, "quantity": quantity})
+        searchList.append({"search": search, "quantity": quantity, "set": set})
     return searchList
 
 

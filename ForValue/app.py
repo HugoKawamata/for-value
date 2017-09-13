@@ -43,18 +43,11 @@ def webhook():
 
                     mode = determine_mode(message_text)
 
-                    if mode == "price-set-mode":
-                        respond = compose_message(message_text)
-                    else:
-                        respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
-                                "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
-                                "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
-                                "Prices are taken from www.cardkingdom.com"
-
                     if os.environ.get("PAGE_ACCESS_TOKEN") == None: # We're testing
                         if mode == "price-set-mode":
-                            log(compose_message(message_text)) # return a string of the message
-                            return compose_message(message_text)
+                            reply = compose_message(message_text) # return a string of the message
+                            log(reply)
+                            #return reply
                         else:
                             helpMsg = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
                                     "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
@@ -62,8 +55,15 @@ def webhook():
                                     "Prices are taken from www.cardkingdom.com"
                             log(helpMsg)
                             return(helpMsg)
+                    else:
+                        if mode == "price-set-mode":
+                            respond = compose_message(message_text)
+                        else:
+                            respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+                                    "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
+                                    "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
+                                    "Prices are taken from www.cardkingdom.com"
 
-                    else: # We're live!
                         send_message(sender_id, respond)
 
                 if messaging_event.get("delivery"):  # delivery confirmation
