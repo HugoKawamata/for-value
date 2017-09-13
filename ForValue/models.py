@@ -98,7 +98,7 @@ def message_to_search_list(message):
         if "\"" in card: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
             search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
-        searchList.append({"search": search, "quantity": quantity, "set": set})
+        searchList.append({"search": search, "name": card.replace("\"", ""), "quantity": quantity, "set": set})
     return searchList
 
 
@@ -119,6 +119,7 @@ def get_prices(decodedMsg, getEdition):
     """
     deetsList = []
     for query in decodedMsg["searches"]:
+        print(str(query))
         card = query["search"]
         resultNumber = 1
 
@@ -127,19 +128,34 @@ def get_prices(decodedMsg, getEdition):
         page = requests.get("http://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=" + card)
         tree = html.fromstring(page.content)
 
-        if "%24" in card: # The user wants to search for exactly this card.
-            firstPageNames = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])//text()")
-            name = "error" # Failsafe
-            for gotname in firstPageNames: # Check all the names in the search results one by one
-                # Convert search back to real english for string comparison
-                realname = card.replace("%2C", ",").replace("+", " ").replace("%27", "'").replace("%3A", ":") \
-                .replace("%21", "!").replace("%26", "&").replace("&filter[tab]=mtg_foil", "").replace("%24", "")
+        if "%24" in card or query["set"] != "": # The user wants to search for exactly this card, or a specific printing.
+            resultNames = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])//text()")
+            resultSets = tree.xpath("(//div[@class='col-sm-9 mainListing']//div[@class='productDetailSet'])//text()")
+            resultSets2 = []
+            for set in resultSets:
+                trimmedSet = " ".join(set.split())
+                if trimmedSet != "":
+                    resultSets2.append(trimmedSet)
+            
+            resultSets = resultSets2
+            print(str(resultSets))
 
-                # If the query and the result are "close enough" (0.8), return that result (and mark its number in the list)
-                if SequenceMatcher(None, realname.lower(), gotname.lower()).ratio() > 0.8:
-                    name = gotname
-                else:
-                    resultNumber += 1
+            name = "error" # Failsafe
+
+            if len(resultNames) != len(resultSets):
+                print("names weren't the same length as sets")
+                break
+
+            i = 0
+            while i < len(resultNames):
+                if "%24" in card:
+                    # If the query and the result are "close enough" (0.8), return that result (and mark its number in the list)
+                    if SequenceMatcher(None, query["name"].lower(), resultNames[i].lower()).ratio() > 0.8:
+                        name = resultNames[i]
+                        break
+                    else:
+                        resultNumber += 1
+                
 
         else: # User didn't put quotes in their search, so we do a smart search
             singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
@@ -150,7 +166,8 @@ def get_prices(decodedMsg, getEdition):
                 tree = html.fromstring(page.content)
 
                 singleItemList = tree.xpath("(//div[@class='col-sm-9 mainListing']//span[@class='productDetailTitle'])[1]//text()")
-                name = singleItemList[0] if len(singleItemList) > 0 else "error" # If the single item list we get doesn't even have one item, throw an error.
+                name = singleItemList[0] if len(singleItemList) > 0 else "error" 
+                # If the single item list we get doesn't even have one item, throw an error.
 
 
         cardDeets["name"] = name
