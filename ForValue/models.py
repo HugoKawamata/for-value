@@ -4,7 +4,7 @@ from re import sub
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 import json
-from mtgsdk import Set, restclient.MtgException
+from mtgsdk import Set
 import sys
 
 
@@ -46,10 +46,7 @@ def card_query_to_set_name(card):
     """
     if card.split()[0][0] == "!" and len(card.split()[0]) == 4: # Set codes must be 3 letters long
         code = card.split()[0][1:] # Cut off exclamation mark
-        try:
-            set = Set.find(code).name
-        except restclient.MtgException:
-            set = ""
+        set = Set.find(code).name
         return set
     else:
         return ""
