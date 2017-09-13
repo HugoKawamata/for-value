@@ -132,7 +132,7 @@ def get_prices(decodedMsg, getEdition):
             resultSets2 = []
             for set in resultSets:
                 trimmedSet = " ".join(set.split())
-                if trimmedSet != "":
+                if trimmedSet != "" and trimmedSet != "FOIL":
                     # Remove rarity symbol from card kingdom result
                     trimmedSet = trimmedSet.replace(" (C)", "").replace(" (U)", "").replace(" (R)", "").replace(" (M)", "").replace(" (S)", "")
                     resultSets2.append(trimmedSet)
