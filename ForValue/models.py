@@ -135,6 +135,8 @@ def get_prices(decodedMsg, getEdition):
             for set in resultSets:
                 trimmedSet = " ".join(set.split())
                 if trimmedSet != "":
+                    # Remove rarity symbol from card kingdom result
+                    trimmedSet = trimmedSet.replace(" (C)", "").replace(" (U)", "").replace(" (R)", "").replace(" (M)", "").replace(" (S)", "")
                     resultSets2.append(trimmedSet)
             
             resultSets = resultSets2
@@ -148,13 +150,27 @@ def get_prices(decodedMsg, getEdition):
 
             i = 0
             while i < len(resultNames):
+                nameOK = False
+                setOK = False
                 if "%24" in card:
                     # If the query and the result are "close enough" (0.8), return that result (and mark its number in the list)
                     if SequenceMatcher(None, query["name"].lower(), resultNames[i].lower()).ratio() > 0.8:
-                        name = resultNames[i]
-                        break
+                        nameOK = True
                     else:
                         resultNumber += 1
+                else:
+                    nameOK = True
+                if query["set"] != "":
+                    if resultSets[i] == query["set"]:
+                        setOK = True
+                    else:
+                        resultNumber += 1
+                else: setOK = True
+                
+                if nameOK and setOK:
+                    name = resultNames[i]
+                    break
+                i += 1
                 
 
         else: # User didn't put quotes in their search, so we do a smart search
