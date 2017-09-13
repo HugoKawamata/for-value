@@ -143,6 +143,8 @@ def get_prices(decodedMsg, getEdition):
 
             if len(resultNames) != len(resultSets):
                 print("names weren't the same length as sets")
+                print(resultNames)
+                print(resultSets)
                 break
 
             i = 0
