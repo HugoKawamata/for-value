@@ -4,7 +4,7 @@ from re import sub
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 import json
-from mtgsdk import Set, restclient
+from mtgsdk import Set, restclient.MtgException
 import sys
 
 
@@ -140,7 +140,6 @@ def get_prices(decodedMsg, getEdition):
                     resultSets2.append(trimmedSet)
             
             resultSets = resultSets2
-            print(str(resultSets))
 
             name = "error" # Failsafe
 
