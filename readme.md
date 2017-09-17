@@ -15,10 +15,4 @@ Query format: [quantity] [!foil] [!setCode] CardName
 - `!foil cancel` -> `FOIL Cancel - 10th Edition (C): AUD 0.44`
 - `!ktk cancel` -> `Cancel - Khans of Tarkir (C): AUD 0.31`
 - `4 cancel` -> `4 Cancel - 10th Edition (C): AUD 1.45`
-
-
-
-
-
-
-
+- `4 !foil !ktk cancel` -> `4 FOIL Cancel - Khans of Tarkir (C): AUD 1.74`

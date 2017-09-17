@@ -63,6 +63,17 @@ class ForValueTestCase(unittest.TestCase):
       remove_price(compose_message("!usd cancel"))
     )
   
+  def test_permutations(self):
+    self.assertEqual(
+      "4 FOIL Cancel - Khans of Tarkir (C): USD\n",
+      remove_price(compose_message("4 !foil !ktk Cancel"))
+    )
+
+    self.assertEqual(
+      "4 FOIL Cancel - Khans of Tarkir (C): USD\n",
+      remove_price(compose_message("4 !ktk !foil Cancel"))
+    )
+  
     
 if __name__ == "__main__":
   unittest.main()

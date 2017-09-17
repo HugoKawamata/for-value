@@ -26,6 +26,9 @@ def verify():
 
 @app.route('/', methods=['POST'])
 def webhook():
+    helpMsg = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
+            "Example message: 4 !foil !ktk cancel\n\n" + \
+            "Prices are taken from www.cardkingdom.com"
 
     # endpoint for processing incoming messaging events
     data = request.get_json()
@@ -49,20 +52,13 @@ def webhook():
                             log(reply)
                             #return reply
                         else:
-                            helpMsg = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
-                                    "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
-                                    "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
-                                    "Prices are taken from www.cardkingdom.com"
                             log(helpMsg)
                             return(helpMsg)
                     else:
                         if mode == "price-set-mode":
                             respond = compose_message(message_text)
                         else:
-                            respond = "You can type cardnames on multiple lines in the same message to get a price sum.\n\n" + \
-                                    "Currency Conversion: !USD (or your currency code) at the beginning of the message.\n\n" + \
-                                    "Foils: !foil before the cardname will grab a foil version of that card.\n\n" + \
-                                    "Prices are taken from www.cardkingdom.com"
+                            respond = helpMsg
 
                         send_message(sender_id, respond)
 
