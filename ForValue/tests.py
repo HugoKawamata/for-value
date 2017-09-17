@@ -56,6 +56,12 @@ class ForValueTestCase(unittest.TestCase):
       "Shock - 10th Edition (C): USD\n",
       remove_price(compose_message("\"shock\""))
     )
+
+  def test_ignore_currency(self):
+    self.assertEqual(
+      "Cancel - 10th Edition (C): USD\n",
+      remove_price(compose_message("!usd cancel"))
+    )
   
     
 if __name__ == "__main__":

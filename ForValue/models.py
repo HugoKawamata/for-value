@@ -71,6 +71,14 @@ def setCode_to_setName(code):
         setName = ""
     return setName
 
+def isCurrencyCode(code):
+    currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
+        "INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
+    if code.upper() in currencyList:
+        return True
+    else:
+        return False
+
 
 def message_to_search_list(message):
     """
@@ -102,6 +110,8 @@ def message_to_search_list(message):
         for option in options:
             if option == "!foil":
                 foil = True
+            elif isCurrencyCode(option[1:]):
+                pass
             else:
                 set = setCode_to_setName(option[1:])
 
