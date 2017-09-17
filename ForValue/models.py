@@ -269,7 +269,7 @@ def compose_message(message):
         if reply == "":
             reply = "No cards were found for those searches. Please ensure spelling is correct, and try again. Type !help for help."
         else:
-            reply += "Total Price: $" + str(totalCost)
+            reply += "Total Price: " + str(totalCost) + "\n"
     else:
         if reply == "":
             reply = "No cards were found for that search. Please ensure spelling is correct, and try again. Type !help for help."
