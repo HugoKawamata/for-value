@@ -62,23 +62,6 @@ def card_query_to_set_name(card):
     else:
         return ""
 
-def message_to_currency_and_message(message):
-    """
-    Takes: a raw, untampered-with facebook message, possibly containing a currency command
-    Returns: a dictionary with the currency specified and the message with the currency command removed
-    """
-    currencyList = ["AUD","USD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","GBP","HKD","HRK","HUF","IDR","ILS",
-        "INR","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN","RON","RUB","SEK","SGD","THB","TRY","ZAR","EUR"]
-    # AUD by default
-    currency = "AUD"
-
-    # If the first character of the message is "!" and the first word is in the currency list, set the currency to that.
-    if message.split()[0][0] == "!" and message.split()[0][1:].upper() in currencyList:
-        currency = message.split()[0][1:].upper()
-        message = message.replace(message.split()[0] + " ", "") # Then remove the first word (it's the currency command)
-    message = message.lower().replace("!p ", "").replace("!s ", "") # In case anyone is still using old syntax, we should remove these strings.
-    return {"currency": currency, "message": message}
-
 def message_to_search_list(message):
     """
     Takes: a facebook message with the currency command removed
@@ -248,10 +231,8 @@ def compose_message(message):
     Returns: a reply to that faceboook message with card prices
     """
     reply = ""
-    currencyMessage = message_to_currency_and_message(message)
-    searchList = message_to_search_list(currencyMessage["message"])
-    result = {"currency": currencyMessage["currency"], "searches": searchList}
-    pricesResult = get_prices(result, True)
+    searchList = message_to_search_list(message)
+    pricesResult = get_prices({"currency": "USD", "searches": searchList}, True)
     totalCost = 0
     for deet in pricesResult["deets"]:
         if deet["name"] != "error" and deet["name"] != "FOIL error":

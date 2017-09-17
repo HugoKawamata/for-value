@@ -31,14 +31,8 @@ class ForValueTestCase(unittest.TestCase):
 
   def test_reply_one_card(self):
     self.assertEqual(
-      "Cancel - 10th Edition (C): AUD\n",
-      remove_price(compose_message("cancel"))
-    )
-
-  def test_one_cardname_and_currency(self):
-    self.assertEqual(
       "Cancel - 10th Edition (C): USD\n",
-      remove_price(compose_message("!usd cancel"))
+      remove_price(compose_message("cancel"))
     )
 
   def test_one_invalid(self):
@@ -47,19 +41,19 @@ class ForValueTestCase(unittest.TestCase):
 
   def test_two_cardnames(self):
     self.assertEqual(
-      "Cancel - 10th Edition (C): AUD\nCounterspell - 3rd Edition (U): AUD\nTotal Price:\n",
+      "Cancel - 10th Edition (C): USD\nCounterspell - 3rd Edition (U): USD\nTotal Price:\n",
       remove_price(compose_message("cancel\ncounterspell"))
     )
 
   def test_foil_cardname(self):
     self.assertEqual(
-      "FOIL Cancel - 10th Edition (C): AUD\n",
+      "FOIL Cancel - 10th Edition (C): USD\n",
       remove_price(compose_message("!foil cancel"))
     )
 
   def test_quote_cardname(self):
     self.assertEqual(
-      "Shock - 10th Edition (C): AUD\n",
+      "Shock - 10th Edition (C): USD\n",
       remove_price(compose_message("\"shock\""))
     )
   
