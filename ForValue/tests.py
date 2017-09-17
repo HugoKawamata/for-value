@@ -12,6 +12,11 @@ class ForValueTestCase(unittest.TestCase):
     app.testing = True
     self.app = app.test_client()
 
+  def remove_price(self, reply):
+    splitReply = reply.split(" ")
+    if represents_float(splitReply[-1]):
+      reply.replace(" " + splitReply[-1], "")
+    return reply
 
   def tearDown(self):
     return
@@ -22,10 +27,10 @@ class ForValueTestCase(unittest.TestCase):
   def test_determine_mode_cards(self):
     self.assertEqual("price-set-mode", determine_mode("help"))
 
-  def test_decode_message_one_card(self):
+  def test_reply_one_card(self):
     self.assertEqual(
-      [{"search": "cancel", "quantity": 1}],
-      message_to_search_list("cancel")
+      "Cancel - 10th Edition (C): AUD"
+      remove_price(compose_message("cancel"))
     )
 
   def test_to_search_list_two_cards(self):
