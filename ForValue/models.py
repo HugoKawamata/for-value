@@ -62,34 +62,56 @@ def card_query_to_set_name(card):
     else:
         return ""
 
+def setCode_to_setName(code):
+    setInfo = requests.get("http://api.deckbrew.com/mtg/sets/" + code.upper()).text
+    data = json.loads(setInfo)
+    try:
+        setName = data["name"]
+    except KeyError:
+        setName = ""
+    return setName
+
+
 def message_to_search_list(message):
     """
     Takes: a facebook message with the currency command removed
     Returns: a dictionary of searches, which will be fed into the Card Kingdom search engine
     """
     searchList = []
-    cardList = message.split("\n")
-    for card in cardList:
-        foil = False
-        if "!foil" in card:
-            card = card.replace("!foil ", "")
-            foil = True
-        quantity = find_quantity(card)
+    queryList = message.split("\n")
+    for query in queryList:
+        # Find quantity first because it is the only option unmarked with `!`
+        quantity = find_quantity(query)
         if quantity == False:
             quantity = 1
         else: # If quantity was specified, remove number
-            card = card.replace(card.split()[0], "")
-        set = card_query_to_set_name(card)
-        if set != "": # If set was specified, remove the set command
-            card = card.replace(card.split()[0], "")
-        
-        search = card.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
+            query = query.replace(query.split()[0], "")
+
+        words = query.split(" ")
+        options = []
+        cardName = ""
+        for word in words:
+            if word != "" and word[0] == "!":
+                options.append(word)
+            else:
+                cardName += word
+                if words.index(word) != len(words) - 1:
+                    cardName += " "
+        foil = False
+        set = ""
+        for option in options:
+            if option == "!foil":
+                foil = True
+            else:
+                set = setCode_to_setName(option[1:])
+
+        search = cardName.replace(",", "%2C").replace(" ", "+").replace("'", "%27").replace(":", "%3A").replace("!", "%21").replace("&", "%26")
         if foil:
             search = search + "&filter[tab]=mtg_foil"
-        if "\"" in card: # User is trying to use quotes to search for an exact name
+        if "\"" in cardName: # User is trying to use quotes to search for an exact name
             search = search.replace("\"", "")
             search = search + "%24" # This apparently pattern matches to "end of string" in card kingdom's search bar !! (I know its gross)
-        searchList.append({"search": search, "name": card.replace("\"", ""), "quantity": quantity, "set": set})
+        searchList.append({"search": search, "name": cardName, "quantity": quantity, "set": set})
     return searchList
 
 
