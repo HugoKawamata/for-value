@@ -23,6 +23,13 @@ def represents_int(str):
     except ValueError:
         return False
 
+def represents_float(str):
+    try:
+        float(str)
+        return True
+    except ValueError:
+        return False
+
 def find_quantity(card):
     """
     Takes: a line of a message (called `card` in decodeMessage()) and returns a number
@@ -47,7 +54,10 @@ def card_query_to_set_name(card):
         code = card.split()[0][1:] # Cut off exclamation mark
         setInfo = requests.get("http://api.deckbrew.com/mtg/sets/" + code.upper()).text
         data = json.loads(setInfo)
-        setName = data["name"]
+        try:
+            setName = data["name"]
+        except KeyError:
+            setName = ""
         return setName
     else:
         return ""
